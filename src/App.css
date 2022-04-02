@@ -36,3 +36,34 @@
     transform: rotate(360deg);
   }
 }
+
+.float-right {
+  float: right;
+}
+.float-left {
+  float: left;
+}
+.timesCircleColor {
+  color: #bd1e1e
+}
+.checkCircleColor {
+  color: #51b32b
+}
+.card-width {
+  max-width: 345px;
+}
+.card-title-height {
+  height: 70px;
+}
+.product-details-img-max-width {
+  max-width: 500px;
+}
+.positionFixed {
+  position: -webkit-sticky; /* Safari & IE */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.input-number-width {
+  width: 80px;
+}

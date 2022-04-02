@@ -1,24 +1,22 @@
-import logo from './logo.svg';
 import './App.css';
+import {Layout} from "./layout/layout";
+import RoutesConfig from "./auth/RoutesConfig";
+import {useDispatch} from "react-redux";
+import {useEffect} from "react";
+import {AuthActions} from "./redux/actions/authActions";
+import {AUTH_TOKEN} from "./axios/axiosInstance";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(AuthActions.updateToken(localStorage.getItem(AUTH_TOKEN)));
+  }, [dispatch]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <Layout>
+        <RoutesConfig/>
+      </Layout>
   );
 }
 
