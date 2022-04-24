@@ -100,8 +100,7 @@ const ProductView = wrapComponent(function ({createSnackbar}) {
                             <h4 className={`pt-4`}>
                                 Filter products
                             </h4>
-                            {/*TODO: CREATE FILTERS*/}
-                            <div>FILTERS</div>
+                            <ProductsFilterComponent categories={categories}/>
                         </div>
                     </div>
                     : null
