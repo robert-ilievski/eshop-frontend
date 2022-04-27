@@ -115,7 +115,9 @@ const PostmanForm = wrapComponent(function ({createSnackbar}) {
                     onChange={(region) => selectRegion(region)}/>
             </div>
             <div className={`mt-3`}>
-
+                <Button color="primary" variant="contained" fullWidth type="submit">
+                    Create postman
+                </Button>
             </div>
         </form>
     );
