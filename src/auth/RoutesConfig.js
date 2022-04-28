@@ -12,6 +12,7 @@ import InvalidTokenView from "../views/user/InvalidTokenView";
 import SentEmailView from "../views/user/SentEmailView";
 import ChangePasswordForm from "../views/user/ChangePasswordForm";
 import ForgotPasswordForm from "../views/user/ForgotPasswordForm";
+import ProductForm from "../views/products/ProductForm";
 
 export const PrivateRoutes = [
     {
@@ -36,6 +37,24 @@ export const PrivateRoutes = [
         component: CategoryForm,
         path: '/categories/edit/:categoryId',
         title: 'Edit Category',
+        exact: true,
+        permission: [
+            Roles.ADMIN
+        ]
+    },
+    {
+        component: ProductForm,
+        path: '/products/add',
+        title: 'Add Product',
+        exact: true,
+        permission: [
+            Roles.ADMIN
+        ]
+    },
+    {
+        component: ProductForm,
+        path: '/products/edit/:productId',
+        title: 'Edit Product',
         exact: true,
         permission: [
             Roles.ADMIN
