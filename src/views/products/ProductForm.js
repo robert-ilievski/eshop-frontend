@@ -11,6 +11,7 @@ import {ProductActions} from "../../redux/actions/productActions";
 import {CategoryActions} from "../../redux/actions/categoryActions";
 import {AttributeActions} from "../../redux/actions/attributeActions";
 import {CircularProgress} from "@mui/material";
+import ImageUploadComponent from "../../components/imageUploadComponent";
 
 const validationSchema = yup.object({
     productTitle: yup.string("Enter product title").required("Product title is required"),
@@ -27,6 +28,12 @@ const ProductForm = wrapComponent(function ({createSnackbar}) {
     const [categories, setCategories] = useState([]);
     const [attributes, setAttributes] = useState([]);
     const [areThereAttributes, setAreThereAttributes] = useState(true);
+    const [imageIdsToRemove, setImageIdsToRemove] = useState([]);
+    const [images, setImages] = useState({
+        images: [],
+        mainImage: 0
+    });
+    const [validateMainImage, setValidateMainImage] = useState(false)
     const [backendWorking, setBackendWorking] = useState(false)
     const formikRef = useRef(null)
 
@@ -103,10 +110,154 @@ const ProductForm = wrapComponent(function ({createSnackbar}) {
         }
     }
 
+    function handleImagesChange(imageState){
+        setImages(imageState)
+    }
 
+    function removeImageRemotely(image_id){
+        setImageIdsToRemove([...imageIdsToRemove, image_id])
+    }
 
     function onSubmit(values) {
-        // TODO Implement this
+        var tempImgValuesArray = []
+        for(let i=0; i<images.images.length; i++)
+            tempImgValuesArray.push(i+1)
+        if(images.images.length > 0 && !tempImgValuesArray.includes(images.mainImage)){
+            setValidateMainImage(true)
+            return;
+        }
+        else{
+            setValidateMainImage(false)
+        }
+        setBackendWorking(true)
+        if(Boolean(productId)){
+            let i=0;
+            function deleteProductImage(imageId){
+                dispatch(
+                    ProductActions.deleteProductImage(productId, imageId, (success, response) => {
+                        i++
+                        if(i<imageIdsToRemove.length)
+                            deleteProductImage(imageIdsToRemove[i])
+                    })
+                )
+            }
+            deleteProductImage(imageIdsToRemove[i])
+        }
+        Boolean(productId) ? dispatch(
+            ProductActions.updateProduct({
+                id: values.id,
+                categoryId: values.categoryId,
+                productTitle: values.productTitle,
+                productDescriptionHTML: values.productDescriptionHTML,
+                quantity: values.quantity,
+                priceInMKD: values.priceInMKD,
+                attributeIdAndValueMap: values.attributeIdAndValueMap
+            }, (success, response) => {
+                if(success) {
+                    if (images.images.length > 0) {
+                        setBackendWorking(true);
+                        var imagesToUpload = []
+                        for(let i=0; i<images.images.length; i++){
+                            if(images.images[i] instanceof File){
+                                imagesToUpload.push(images.images[i])
+                            }
+                        }
+                        if(imagesToUpload.length === 0){
+                            createSnackbar({
+                                message: success ? 'Successfully Updated Product' : 'Product failed to Update',
+                                timeout: 2500,
+                                theme: success ? 'success' : 'error'
+                            });
+                            setBackendWorking(false)
+                        }
+                        else{
+                            let i=0;
+                            function uploadNewImage(imageToUpload){
+                                dispatch(
+                                    ProductActions.addNewProductImage(productId, imageToUpload, (success2, response) => {
+                                        if(!success2){
+                                            createSnackbar({
+                                                message: 'Image failed to Update',
+                                                timeout: 2500,
+                                                theme: 'error'
+                                            });
+                                        }
+                                        i++
+                                        if(i<imagesToUpload.length){
+                                            uploadNewImage(imagesToUpload[i])
+                                        }
+                                        else{
+                                            createSnackbar({
+                                                message: success2 ? 'Successfully Updated Product' : 'Product failed to Update',
+                                                timeout: 2500,
+                                                theme: success2 ? 'success' : 'error'
+                                            });
+                                            setBackendWorking(false)
+                                        }
+                                    })
+                                )
+                            }
+                            uploadNewImage(imagesToUpload[i])
+                        }
+                        if(images.images[images.mainImage-1] instanceof File){
+                            createSnackbar({
+                                message: 'Please re-select your main product image after images have finished uploading',
+                                timeout: 7000,
+                                theme: 'warning'
+                            });
+                        }
+                        else{
+                            const parts = images.images[images.mainImage-1].split("/")
+                            dispatch(
+                                ProductActions.setMainProductImage(productId, Number(parts[parts.length - 1].replace(".jpg", "")))
+                            )
+                        }
+                        success && history.push(`/products/edit/${response.data.id}`);
+                    } else {
+                        createSnackbar({
+                            message: success ? 'Successfully Updated Product' : 'Product failed to Update',
+                            timeout: 2500,
+                            theme: success ? 'success' : 'error'
+                        });
+                        setBackendWorking(false)
+                        success && history.push(`/products/edit/${response.data.id}`);
+                    }
+                }
+            })
+        ) : dispatch(
+            ProductActions.addProduct({
+                categoryId: values.categoryId,
+                productTitle: values.productTitle,
+                productDescriptionHTML: values.productDescriptionHTML,
+                quantity: values.quantity,
+                priceInMKD: values.priceInMKD,
+                attributeIdAndValueMap: values.attributeIdAndValueMap
+            }, (success, response) => {
+                if(success) {
+                    if (images.images.length > 0) {
+                        dispatch(
+                            ProductActions.addAllProductImages(response.data.id, images.mainImage, images.images, (success2, response2) => {
+                                createSnackbar({
+                                    message: success2 ? 'Successfully Created Product' : 'Product failed to Create',
+                                    timeout: 2500,
+                                    theme: success2 ? 'success' : 'error'
+                                });
+                                setBackendWorking(false)
+                                success2 && history.push(`/products/edit/${response.data.id}`);
+                            })
+                        )
+                    } else {
+                        createSnackbar({
+                            message: success ? 'Successfully Created Product' : 'Product failed to Create',
+                            timeout: 2500,
+                            theme: success ? 'success' : 'error'
+                        });
+                        setBackendWorking(false)
+                        success && history.push(`/products/edit/${response.data.id}`);
+                    }
+                }
+            })
+        );
     }
     return (
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}
@@ -194,6 +345,16 @@ const ProductForm = wrapComponent(function ({createSnackbar}) {
                             </div>
                         </div>
                         <div className={'row pt-3'}>
+                            <div className={'col'}>
+                                <h4>Images</h4>
+                                <small>*Please select the main image by clicking on it after you upload it*</small>
+                                <ImageUploadComponent
+                                    handleImagesChange={handleImagesChange}
+                                    productId={productId ? productId : -1}
+                                    removeImageRemotely={removeImageRemotely}
+                                />
+                                {validateMainImage ? <div className={"text-warning"}>Please select the main product image</div> : null}
+                            </div>
                             <div className={'col'}>
                                 <h4>Attributes</h4>
                                 <FieldArray name="attributes">
