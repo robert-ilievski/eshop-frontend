@@ -13,6 +13,9 @@ import SentEmailView from "../views/user/SentEmailView";
 import ChangePasswordForm from "../views/user/ChangePasswordForm";
 import ForgotPasswordForm from "../views/user/ForgotPasswordForm";
 import ProductForm from "../views/products/ProductForm";
+import PostmanForm from "../views/admin/PostmanForm";
+import ShoppingCartView from "../views/shopping_cart/ShoppingCartView";
+import ProductDetails from "../views/products/ProductDetails";
 
 export const PrivateRoutes = [
     {
@@ -55,6 +58,15 @@ export const PrivateRoutes = [
         component: ProductForm,
         path: '/products/edit/:productId',
         title: 'Edit Product',
+        exact: true,
+        permission: [
+            Roles.ADMIN
+        ]
+    },
+    {
+        component: PostmanForm,
+        path: '/create-postman',
+        title: 'Create Postman',
         exact: true,
         permission: [
             Roles.ADMIN
@@ -138,6 +150,24 @@ export const PublicRoutes = [
         component: ProductView,
         path: '/products',
         title: 'Products',
+        permission: [
+            Roles.ADMIN,
+            Roles.USER
+        ]
+    },
+    {
+        component: ProductDetails,
+        path: '/products/:productId',
+        title: 'Product Details',
+        permission: [
+            Roles.ADMIN,
+            Roles.USER
+        ]
+    },
+    {
+        component: ShoppingCartView,
+        path: '/shopping-cart/:username',
+        title: 'Shopping Cart',
         permission: [
             Roles.ADMIN,
             Roles.USER
