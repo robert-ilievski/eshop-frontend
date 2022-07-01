@@ -15,6 +15,7 @@ import {
     Typography,
 } from "@mui/material";
 import {CategoryActions} from "../../redux/actions/categoryActions";
+import ProductsFilterComponent from "../../components/ProductsFIlterComponent";
 
 const ProductView = wrapComponent(function ({createSnackbar}) {
     const dispatch = useDispatch();
