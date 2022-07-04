@@ -76,7 +76,43 @@ const OrderForm = wrapComponent(function ({createSnackbar}) {
     },
     validationSchema,
     onSubmit: values => {
-
+      if (Boolean(auth) && auth.username === username) {
+        dispatch(OrderActions.makeOrder({
+            username: auth.username,
+            city: region,
+            telephone: values.telephone,
+            address: values.address
+          }, (success, response) => {
+            if (success) {
+              if (response.data.hasEnoughQuantity !== undefined && !response.data.hasEnoughQuantity) {
+                createSnackbar({
+                  message: `You can't add the desired quantity of 
+                                    ${response.data.product.productTitle} to the cart, 
+                                    there are only ${response.data.product.quantity} items available.`,
+                  timeout: 3200,
+                  theme: 'error'
+                });
+              }
+              else if (response.data === "Postman not found!"){
+                createSnackbar({
+                  message: 'We currently have no postmans for your selected city. Please choose another one.',
+                  timeout: 3200,
+                  theme: 'error'
+                });
+              }
+              else {
+                createSnackbar({
+                  message: success ? 'Successfully made order.'
+                    : 'Error while making order. Try again!',
+                  timeout: 2500,
+                  theme: success ? 'success' : 'error'
+                });
+                success && history.push(`/my-orders/${username}`);
+              }
+            }
+          }
+        ));
+      }
     }
   });
 
