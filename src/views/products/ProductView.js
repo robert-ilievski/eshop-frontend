@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import {CategoryActions} from "../../redux/actions/categoryActions";
 import ProductsFilterComponent from "../../components/ProductsFIlterComponent";
+import {ShoppingCartActions} from "../../redux/actions/shoppingCartActions";
 
 const ProductView = wrapComponent(function ({createSnackbar}) {
     const dispatch = useDispatch();
@@ -51,6 +52,48 @@ const ProductView = wrapComponent(function ({createSnackbar}) {
             }
         }));
     }, []);
+
+    const handleAddToCart = id => {
+        dispatch(ProductActions.checkProductQuantity({
+            productId: id,
+            quantity: 1,
+        }, (success, response) => {
+            if (success) {
+                if (response.data === 'Unauthenticated') {
+                    createSnackbar({
+                        message: 'Sorry, you must be signed in in order to add items to your shopping cart.',
+                        timeout: 3000,
+                        theme: 'error'
+                    });
+                } else if (!response.data.hasEnoughQuantity) {
+                    createSnackbar({
+                        message: `You can't add ${1} items of ${response.data.product.productTitle} to the cart, 
+                        there are only ${response.data.product.quantity} items available.`,
+                        timeout: 3200,
+                        theme: 'error'
+                    });
+                } else {
+                    dispatch(ShoppingCartActions.addToShoppingCart(auth.username, {
+                        'productId': id,
+                        'quantity': 1,
+                    }, (success, response) => {
+                        createSnackbar({
+                            message: success ? 'Successfully added product to cart.'
+                              : 'Failed to add product to cart.',
+                            timeout: 2500,
+                            theme: success ? 'success' : 'error'
+                        });
+                    }))
+                }
+            } else {
+                createSnackbar({
+                    message: `Error while checking product quantity.`,
+                    timeout: 2500,
+                    theme: 'error'
+                });
+            }
+        }))
+    };
 
     if (categories.length === 0 && products.length === 0) {
         return (
@@ -137,8 +180,7 @@ const ProductView = wrapComponent(function ({createSnackbar}) {
                                             <div className={`col`}>
                                                 <Button color={"primary"}
                                                         disabled={product.quantity === 0}
-                                                        // TODO: handleAddToCart()
-                                                        onClick={null}
+                                                        onClick={() => handleAddToCart(product.id)}
                                                         variant="contained">
                                                     Add to cart
                                                 </Button>
