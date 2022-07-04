@@ -78,7 +78,8 @@ const MyOrders = wrapComponent(function ({createSnackbar}) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {orders && orders.map((order, i) => (
+                            {
+                                orders && orders.map((order, i) => (
                                 <TableRow key={order.id}>
                                     <TableCell component="th" scope="row" name="order" padding="none"
                                                align="center">
@@ -135,6 +136,7 @@ const MyOrders = wrapComponent(function ({createSnackbar}) {
             </div>
         );
     }
+
 });
 
 export default MyOrders;
